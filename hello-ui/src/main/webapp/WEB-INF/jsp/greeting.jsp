@@ -28,7 +28,7 @@
 <body>
 <b>
 <jsp:text>
-		${hello.salutation}, ${hello.audience}
+		${hello.salutation} to the ${hello.audience}
 </jsp:text>
 </b>
 </body>

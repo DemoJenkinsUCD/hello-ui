@@ -21,6 +21,14 @@ import publishVersionToUrbanCode
 import runCucumberTest
 import runMvn
 
+import com.icct.ucd.DeployApplication
+import com.icct.ucd.DeployComponent
+import com.icct.ucd.UrbanCodeConfiguration
+
+def UCDCONFIG = new UrbanCodeConfiguration('ucd_demo', 'https://ucd-server:8443', 'UCD-admin')
+def COMPONENT = new DeployComponent('hello-ui', "")
+def APP = new DeployApplication('hello-world', 'Deploy all to Tomcat')
+
 pipeline
 {
 	agent any
@@ -49,7 +57,12 @@ pipeline
 		{
 			steps
 			{
-				publishVersionToUrbanCode 'hello-ui', 'hello-world', "${BUILD_NUMBER}", "${WORKSPACE}/hello-ui/target"
+				script
+				{
+					COMPONENT.artifactBasePath = "${WORKSPACE}/hello-ui/target"
+					APP.addComponentVersion(COMPONENT, "${BUILD_NUMBER}")
+				}
+				publishVersionToUrbanCode UCDCONFIG, COMPONENT, APP.name, "${BUILD_NUMBER}"
 			}
 		}
 		
@@ -57,7 +70,7 @@ pipeline
 		{
 			steps
 			{
-				deployApplicationWithUrbanCode 'hello-ui', 'hello-world', "${BUILD_NUMBER}", 'Dev', 'Deploy all to Tomcat'
+				deployApplicationWithUrbanCode UCDCONFIG, APP, 'Dev'
 			}
 		}
 		
@@ -74,7 +87,7 @@ pipeline
 		{
 			steps
 			{
-				createApplicationSnapshotInUrbanCode 'hello-world', 'Dev', "hello.ui${BUILD_NUMBER}"
+				createApplicationSnapshotInUrbanCode UCDCONFIG, APP.name, 'Dev', "hello.ui${BUILD_NUMBER}"
 			}
 		}
 	}
